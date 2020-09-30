@@ -1,12 +1,20 @@
-let myLibrary = [];
+let myList = [];
+var storedList = JSON.parse(localStorage.getItem("myList"));
+
+window.addEventListener('load', function () {
+    if(storedList.length > 0) {
+        myList = storedList;
+        loadList();
+    }
+})
 
 function Book(title, author, pages, read) {
     this.title = title;
     this.author = author;
     this.pages = pages;
     this.read = read;
-    myLibrary.push(this);
-    createList();
+    myList.push(this);
+    addList();
 }
 
 function addBook() {
@@ -25,80 +33,81 @@ function addBook() {
     return false;
 }
 
-function createList() {
-    let list = document.createElement("p");
-    list.setAttribute("class", "list");
+function loadList() {
+    let listContainer = document.getElementById("listContainer");
+    let listHeader = document.getElementById("listHeader");
+    let list = document.createElement("ul");
 
-    let mark = document.createElement("BUTTON");
-    mark.setAttribute("id", "markBook" + myLibrary.length)
-    mark.innerHTML = "Change Mark";
-    mark.onclick = function() {
-        changeMark(event.target.id);
-    }
-
-    let remove = document.createElement("BUTTON");
-    remove.setAttribute("id", "removeBook" + myLibrary.length)
-    remove.innerHTML = "Remove";
-    remove.onclick = function() {
-        removeBook(event.target.id);
-    }
-    list.textContent = myLibrary[myLibrary.length - 1].title + 
-                        " by " + myLibrary[myLibrary.length - 1].author + 
-                        " " + myLibrary[myLibrary.length - 1].pages + " pages, " + myLibrary[myLibrary.length - 1].read + ".";
-    list.appendChild(remove); 
-    list.appendChild(mark);                   
-    document.getElementById("bookList").appendChild(list);
-    document.getElementById("bookList").style.visibility = "visible";
-}
-
-function modifyList() {
-    if(myLibrary.length == 0) {
-        document.getElementById("bookList").style.visibility = "hidden";
-        return;
-    }
-
-    let bookList = document.getElementById("bookList");
-    bookList.innerHTML = '';
-
-    for(let i = 0; i < myLibrary.length; i++) {
-        let list = document.createElement("p");
-        list.setAttribute("class", "list");
+    for(let i = 0; i < myList.length; i++) {
+        let listItem = document.createElement("li");
+        listItem.setAttribute("class", "listItem");
 
         let mark = document.createElement("BUTTON");
         mark.setAttribute("id", "markBook" + (i + 1));
-        mark.innerHTML = "Change Mark";
+        mark.setAttribute("class", "markBook");
+        mark.innerText = "Change Mark";
         mark.onclick = function() {
             changeMark(event.target.id);
         }
 
         let remove = document.createElement("BUTTON");
         remove.setAttribute("id", "removeBook" + (i + 1))
-        remove.innerHTML = "Remove";
+        remove.innerText = "Remove";
         remove.onclick = function() {
             removeBook(event.target.id);
         }
-        list.textContent = myLibrary[i].title + 
-                            " by " + myLibrary[i].author + 
-                            " " + myLibrary[i].pages + " pages, " + myLibrary[i].read + ".";
-        list.appendChild(remove);                    
-        list.appendChild(mark);
-        document.getElementById("bookList").appendChild(list);
+
+        listItem.textContent = myList[i].title + 
+                            " by " + myList[i].author + 
+                            " " + myList[i].pages + " pages, " + myList[i].read + ".";
+
+        listItem.appendChild(remove);                    
+        listItem.appendChild(mark);
+        list.appendChild(listItem);       
     }
+    listContainer.appendChild(list);  
+    listContainer.style.visibility = "visible";
+    listHeader.style.visibility = "visible";
+}
+
+function addList() {
+    setStorage();
+    document.getElementById("listContainer").innerText = '';
+    loadList();
+}
+
+function modifyList() {
+    setStorage();
+    let listContainer = document.getElementById("listContainer");
+    let listHeader = document.getElementById("listHeader");
+
+    if(myList.length == 0) {
+        listContainer.style.visibility = "hidden";
+        listHeader.style.visibility = "hidden";
+        return;
+    }
+
+    listContainer.innerText = '';
+    loadList();
 }
 
 function changeMark(id) {
     let index = parseInt(id.substr(8)) - 1;
-    if(myLibrary[index].read === "read") {
-        myLibrary[index].read = "unread";
+    if(myList[index].read === "read") {
+        myList[index].read = "unread";
     }
     else {
-        myLibrary[index].read = "read";
+        myList[index].read = "read";
     }
     modifyList();
 }
 
 function removeBook(id) {
     let index = parseInt(id.substr(10)) - 1;
-    myLibrary.splice(index, 1);
+    myList.splice(index, 1);
     modifyList();
+}
+
+function setStorage() {
+    localStorage.setItem("myList", JSON.stringify(myList));
 }
